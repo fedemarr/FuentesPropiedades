@@ -8,7 +8,6 @@ interface LogotipoProps {
 }
 
 export function Logotipo({
-  variante = "oscuro",
   className,
 }: LogotipoProps) {
   return (

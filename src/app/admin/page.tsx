@@ -3,6 +3,9 @@ import Link from "next/link";
 import { Building2, Calculator, Eye, MessagesSquare } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { cn } from "@/lib/utils";
+import { GraficosDashboard } from "@/components/admin/dashboard/graficos-dashboard";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -12,6 +15,12 @@ export const metadata: Metadata = {
 function inicioDeMes(): Date {
   const fecha = new Date();
   return new Date(fecha.getFullYear(), fecha.getMonth(), 1);
+}
+
+function fechaHaceNMeses(n: number): Date {
+  const fecha = new Date();
+  fecha.setMonth(fecha.getMonth() - n);
+  return fecha;
 }
 
 async function obtenerMetricas() {
@@ -32,8 +41,79 @@ async function obtenerMetricas() {
   return { propiedadesPublicadas, vistasDelMes, consultasNuevas, tasacionesPendientes };
 }
 
+const MESES_CORTOS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
+async function obtenerConsultasPorMes() {
+  const desde = fechaHaceNMeses(5);
+  const consultas = await prisma.consulta.groupBy({
+    by: ["createdAt"],
+    where: { createdAt: { gte: desde } },
+    _count: { id: true },
+  });
+
+  const mapa = new Map<string, number>();
+  for (let i = 5; i >= 0; i--) {
+    const fecha = new Date();
+    fecha.setMonth(fecha.getMonth() - i);
+    const clave = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, "0")}`;
+    mapa.set(clave, 0);
+  }
+
+  for (const c of consultas) {
+    const d = new Date(c.createdAt);
+    const clave = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    if (mapa.has(clave)) {
+      mapa.set(clave, (mapa.get(clave) ?? 0) + c._count.id);
+    }
+  }
+
+  return Array.from(mapa.entries()).map(([clave, cantidad]) => {
+    const [year, mes] = clave.split("-");
+    const idx = parseInt(mes ?? "1") - 1;
+    return { mes: `${MESES_CORTOS[idx]} ${year?.slice(2) ?? ""}`, cantidad };
+  });
+}
+
+async function obtenerPropiedadesTop() {
+  const propiedades = await prisma.propiedad.findMany({
+    where: { deletedAt: null, publicacion: "PUBLICADA" },
+    select: { titulo: true, vistas: true },
+    orderBy: { vistas: "desc" },
+    take: 5,
+  });
+  return propiedades.map((p) => ({
+    titulo: p.titulo.length > 30 ? p.titulo.slice(0, 30) + "…" : p.titulo,
+    vistas: p.vistas,
+  }));
+}
+
+async function obtenerEstadoPropiedades() {
+  const estados = await prisma.propiedad.groupBy({
+    by: ["estado"],
+    where: { deletedAt: null, publicacion: "PUBLICADA" },
+    _count: { id: true },
+  });
+
+  const labels: Record<string, string> = {
+    DISPONIBLE: "Disponible",
+    RESERVADA: "Reservada",
+    VENDIDA: "Vendida",
+    ALQUILADA: "Alquilada",
+  };
+
+  return estados.map((e) => ({
+    estado: labels[e.estado] ?? e.estado,
+    cantidad: e._count.id,
+  }));
+}
+
 export default async function DashboardAdmin() {
-  const metricas = await obtenerMetricas();
+  const [metricas, consultasPorMes, propiedadesTop, estadoPropiedades] = await Promise.all([
+    obtenerMetricas(),
+    obtenerConsultasPorMes(),
+    obtenerPropiedadesTop(),
+    obtenerEstadoPropiedades(),
+  ]);
   const hayConsultasSinResponder = metricas.consultasNuevas > 0;
 
   return (
@@ -71,6 +151,12 @@ export default async function DashboardAdmin() {
           href="/admin/tasaciones"
         />
       </div>
+
+      <GraficosDashboard
+        consultasPorMes={consultasPorMes}
+        propiedadesTop={propiedadesTop}
+        estadoPropiedades={estadoPropiedades}
+      />
     </div>
   );
 }
