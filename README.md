@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Fuentes Propiedades
 
-## Getting Started
+Sitio web inmobiliario para Fuentes Propiedades — venta, alquiler y administración de propiedades en zona norte del GBA.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Frontend:** Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS v4
+- **UI:** shadcn/ui (radix-nova), Lucide React, Framer Motion, Recharts
+- **Backend:** Prisma 7 (PostgreSQL/Supabase), NextAuth v5 (Credentials)
+- **Servicios:** Cloudinary (imágenes), Leaflet/OpenStreetMap (mapas)
+
+## Estructura del proyecto
+
+```
+src/
+├── app/
+│   ├── (public)/          # Páginas públicas (route group)
+│   │   ├── page.tsx       # Home
+│   │   ├── propiedades/   # Listado + ficha [slug]
+│   │   ├── venta/
+│   │   ├── alquiler/
+│   │   ├── tasaciones/
+│   │   ├── administraciones/
+│   │   ├── nosotros/
+│   │   ├── faq/
+│   │   ├── contacto/
+│   │   └── privacidad/
+│   ├── admin/             # Panel de administración
+│   │   ├── page.tsx       # Dashboard con gráficos
+│   │   ├── propiedades/   # CRUD propiedades
+│   │   ├── consultas/     # Bandeja de consultas
+│   │   ├── configuracion/ # Ajustes del sitio
+│   │   └── login/
+│   └── api/auth/          # NextAuth route handler
+├── components/
+│   ├── publicos/          # Componentes del sitio público
+│   ├── admin/             # Componentes del admin
+│   ├── ui/                # shadcn/ui
+│   ├── seo/               # JSON-LD
+│   └── marca/             # Logotipo
+└── lib/                   # Utilidades, helpers, constants
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Variables de entorno
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Variable | Descripción |
+|---|---|
+| `DATABASE_URL` | URL de conexión a Supabase (pooler, puerto 6543) |
+| `DIRECT_URL` | URL directa de Supabase (puerto 5432) |
+| `AUTH_SECRET` | Secreto para NextAuth |
+| `NEXT_PUBLIC_SITE_URL` | URL del sitio en producción |
+| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | Cloud name de Cloudinary |
+| `CLOUDINARY_API_KEY` | API key de Cloudinary |
+| `CLOUDINARY_API_SECRET` | API secret de Cloudinary |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Desarrollo local
 
-## Learn More
+```bash
+npm install
+cp .env.example .env  # completar variables
+npx prisma generate
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Deploy
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+El sitio se deploya automáticamente en Vercel al hacer push a `main`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Credenciales de admin
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- URL: `/admin/login`
+- Email: `fuentespropiedades@login.com`
+- Contraseña: `12345678`
