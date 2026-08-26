@@ -1,26 +1,331 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* Sin modo oscuro: el sitio público lo prohíbe explícitamente y el panel
+   admin no lo necesita. Redirigimos la variante `dark:` (que traen algunos
+   componentes de shadcn) a una clase `.dark` que nunca se aplica, en vez de
+   dejarla caer en `prefers-color-scheme` — así el modo oscuro del sistema
+   operativo del visitante no puede filtrarse por accidente. */
+@custom-variant dark (&:is(.dark *));
+
+/* ==========================================================================
+   FUENTES PROPIEDADES — Sistema de diseño
+   Paleta 60/30/10 (base / estructura / acento), tipografía fluida,
+   radios, sombras y timings. Sin modo oscuro en el sitio público.
+   ========================================================================== */
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Base — 60% */
+  --fp-white: #ffffff;
+  --fp-bone: #f7f8fa;
+
+  /* Estructura — 30% */
+  --fp-navy: #011e5e;
+  --fp-navy-900: #01143f;
+  --fp-navy-700: #0a2e7a;
+  --fp-navy-50: #eef2fa;
+
+  /* Acento — 10% */
+  --fp-red: #c8102e;
+  --fp-red-700: #a00d25;
+  --fp-red-50: #fdf0f2;
+
+  /* Neutros */
+  --fp-ink: #101828;
+  --fp-slate: #667085;
+  --fp-line: #e4e7ec;
+
+  /* Error de sistema — distinto del rojo de marca para no confundir
+     "eliminar / inválido" con el CTA principal del sitio */
+  --fp-error: #dc2626;
+  --fp-error-50: #fef2f2;
+  --fp-success: #059669;
+  --fp-success-50: #ecfdf5;
+  --fp-warning: #d97706;
+  --fp-warning-50: #fffbeb;
+
+  /* Radios */
+  --radius-fp-sm: 8px;
+  --radius-fp-md: 14px;
+  --radius-fp-lg: 20px;
+  --radius-fp-full: 9999px;
+
+  /* Sombras — tinte navy, nunca negro puro */
+  --shadow-fp-sm: 0 1px 3px rgba(1, 30, 94, 0.06), 0 1px 2px rgba(1, 30, 94, 0.04);
+  --shadow-fp-md: 0 4px 16px rgba(1, 30, 94, 0.08), 0 2px 4px rgba(1, 30, 94, 0.04);
+  --shadow-fp-lg: 0 12px 40px rgba(1, 30, 94, 0.12), 0 4px 8px rgba(1, 30, 94, 0.06);
+
+  /* Timings */
+  --ease-fp: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-fp-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --t-fp-fast: 150ms;
+  --t-fp-base: 250ms;
+  --t-fp-slow: 450ms;
+
+  /* shadcn/ui — mapeado a la marca. Primario = rojo (regla no negociable
+     del prompt: el rojo ES el botón primario). Secundario = navy. */
+  --radius: 0.875rem; /* 14px, = --radius-fp-md */
+  --background: var(--fp-white);
+  --foreground: var(--fp-ink);
+  --card: var(--fp-white);
+  --card-foreground: var(--fp-ink);
+  --popover: var(--fp-white);
+  --popover-foreground: var(--fp-ink);
+  --primary: var(--fp-red);
+  --primary-foreground: var(--fp-white);
+  --secondary: var(--fp-navy);
+  --secondary-foreground: var(--fp-white);
+  --muted: var(--fp-bone);
+  --muted-foreground: var(--fp-slate);
+  --accent: var(--fp-navy-50);
+  --accent-foreground: var(--fp-navy);
+  --destructive: var(--fp-error);
+  --destructive-foreground: var(--fp-white);
+  --border: var(--fp-line);
+  --input: var(--fp-line);
+  --ring: var(--fp-navy-700);
+  /* Recharts (solo dashboard admin): un único color de marca, sin paleta
+     multicolor — el prompt pide "un solo color, sin grilla pesada". */
+  --chart-1: var(--fp-navy);
+  --chart-2: var(--fp-navy-700);
+  --chart-3: var(--fp-red);
+  --chart-4: var(--fp-slate);
+  --chart-5: var(--fp-navy-50);
+  --sidebar: var(--fp-navy);
+  --sidebar-foreground: var(--fp-white);
+  --sidebar-primary: var(--fp-red);
+  --sidebar-primary-foreground: var(--fp-white);
+  --sidebar-accent: var(--fp-navy-700);
+  --sidebar-accent-foreground: var(--fp-white);
+  --sidebar-border: var(--fp-navy-700);
+  --sidebar-ring: var(--fp-red);
 }
 
 @theme inline {
+  /* Colores de marca como utilidades: bg-fp-navy, text-fp-red, etc. */
+  --color-fp-white: var(--fp-white);
+  --color-fp-bone: var(--fp-bone);
+  --color-fp-navy: var(--fp-navy);
+  --color-fp-navy-900: var(--fp-navy-900);
+  --color-fp-navy-700: var(--fp-navy-700);
+  --color-fp-navy-50: var(--fp-navy-50);
+  --color-fp-red: var(--fp-red);
+  --color-fp-red-700: var(--fp-red-700);
+  --color-fp-red-50: var(--fp-red-50);
+  --color-fp-ink: var(--fp-ink);
+  --color-fp-slate: var(--fp-slate);
+  --color-fp-line: var(--fp-line);
+  --color-fp-error: var(--fp-error);
+  --color-fp-error-50: var(--fp-error-50);
+  --color-fp-success: var(--fp-success);
+  --color-fp-success-50: var(--fp-success-50);
+  --color-fp-warning: var(--fp-warning);
+  --color-fp-warning-50: var(--fp-warning-50);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 6px);
+
+  --radius-fp-sm: var(--radius-fp-sm);
+  --radius-fp-md: var(--radius-fp-md);
+  --radius-fp-lg: var(--radius-fp-lg);
+  --radius-fp-full: var(--radius-fp-full);
+
+  /* Tipografía */
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-heading: var(--font-display);
+
+  --container-page: 1280px;
+
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-sidebar-border: var(--sidebar-border);
+
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+
+  --color-sidebar-accent: var(--sidebar-accent);
+
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+
+  --color-sidebar-primary: var(--sidebar-primary);
+
+  --color-sidebar-foreground: var(--sidebar-foreground);
+
+  --color-sidebar: var(--sidebar);
+
+  --color-chart-5: var(--chart-5);
+
+  --color-chart-4: var(--chart-4);
+
+  --color-chart-3: var(--chart-3);
+
+  --color-chart-2: var(--chart-2);
+
+  --color-chart-1: var(--chart-1);
+
+  --radius-2xl: calc(var(--radius) * 1.8);
+
+  --radius-3xl: calc(var(--radius) * 2.2);
+
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    scroll-behavior: auto; /* Lenis toma el control del scroll suave */
+    @apply font-sans;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: var(--fp-red-50);
+    color: var(--fp-navy);
+  }
+
+  /* Respetar preferencia de movimiento reducido en todo el sitio */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  /* ---- Escala tipográfica fluida (mobile → desktop, 375px → 1440px) ---- */
+
+  .text-fp-display {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(2.25rem, 1.546rem + 3.005vw, 4.25rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+
+  .text-fp-h1 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.875rem, 1.479rem + 1.69vw, 3rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  .text-fp-h2 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.5rem, 1.236rem + 1.127vw, 2.25rem);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  .text-fp-h3 {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: clamp(1.25rem, 1.162rem + 0.376vw, 1.5rem);
+    line-height: 1.3;
+  }
+
+  .text-fp-body {
+    font-family: var(--font-sans);
+    font-weight: 400;
+    font-size: clamp(0.9375rem, 0.915rem + 0.094vw, 1rem);
+    line-height: 1.65;
+  }
+
+  .text-fp-small {
+    font-family: var(--font-sans);
+    font-weight: 400;
+    font-size: clamp(0.8125rem, 0.791rem + 0.094vw, 0.875rem);
+    line-height: 1.5;
+  }
+
+  .text-fp-label {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+  }
+
+  .text-fp-number {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---- Patrón de título de sección: mixto + subrayado que se dibuja ---- */
+
+  .fp-section-title-underline {
+    display: block;
+    width: 56px;
+    height: 3px;
+    background: var(--fp-red);
+    margin-top: 0.75rem;
+  }
+
+  /* ---- Contenedor de página ---- */
+
+  .fp-container {
+    width: 100%;
+    max-width: var(--container-page);
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+
+  @media (min-width: 768px) {
+    .fp-container {
+      padding-inline: 2rem;
+    }
+  }
+
+  /* ---- Utilidades de sombra de marca ---- */
+
+  .shadow-fp-sm {
+    box-shadow: var(--shadow-fp-sm);
+  }
+
+  .shadow-fp-md {
+    box-shadow: var(--shadow-fp-md);
+  }
+
+  .shadow-fp-lg {
+    box-shadow: var(--shadow-fp-lg);
+  }
 }

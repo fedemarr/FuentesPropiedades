@@ -1,0 +1,301 @@
+// FUENTES PROPIEDADES — Schema de base de datos
+// Prisma 7 + PostgreSQL (Neon). La URL de conexión vive en prisma7.config.ts,
+// no en este archivo (cambio de Prisma 7).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum Operacion {
+  VENTA
+  ALQUILER
+}
+
+enum TipoPropiedad {
+  CASA
+  DEPARTAMENTO
+  PH
+  LOTE
+  LOCAL
+  OFICINA
+  QUINTA
+  GALPON
+  COCHERA
+  CAMPO
+}
+
+enum EstadoPropiedad {
+  DISPONIBLE
+  RESERVADA
+  VENDIDA
+  ALQUILADA
+}
+
+enum EstadoPub {
+  BORRADOR
+  PUBLICADA
+  ARCHIVADA
+}
+
+enum Moneda {
+  USD
+  ARS
+}
+
+enum Antiguedad {
+  A_ESTRENAR
+  EN_POZO
+  HASTA_5
+  ENTRE_5_10
+  ENTRE_10_20
+  MAS_20
+}
+
+enum Condicion {
+  EXCELENTE
+  MUY_BUENO
+  BUENO
+  A_REFACCIONAR
+}
+
+enum Situacion {
+  VACIA
+  OCUPADA
+  ALQUILADA
+}
+
+enum Orientacion {
+  NORTE
+  SUR
+  ESTE
+  OESTE
+  NORESTE
+  NOROESTE
+  SUDESTE
+  SUDOESTE
+}
+
+enum EstadoConsulta {
+  NUEVA
+  CONTACTADA
+  CERRADA
+}
+
+enum TipoConsulta {
+  PROPIEDAD
+  GENERAL
+  TASACION
+  ADMINISTRACION
+}
+
+// Origen de una consulta dentro del sitio. Se modela como enum (y no como
+// string libre) siguiendo la convención del resto del schema: nunca strings
+// libres para valores de un conjunto cerrado y conocido.
+enum OrigenConsulta {
+  HOME
+  FICHA_PROPIEDAD
+  LISTADO
+  CONTACTO
+  TASACIONES
+  ADMINISTRACIONES
+  FAVORITOS
+  COMPARADOR
+}
+
+// ============================================================================
+// MODELOS
+// ============================================================================
+
+model Propiedad {
+  id     String @id @default(uuid())
+  codigo String @unique // FP-0001, autoincremental
+  slug   String @unique // titulo + codigo, generado
+
+  titulo      String
+  descripcion String @db.Text
+
+  operacion   Operacion
+  tipo        TipoPropiedad
+  estado      EstadoPropiedad @default(DISPONIBLE)
+  publicacion EstadoPub       @default(BORRADOR)
+  destacada   Boolean         @default(false)
+
+  // Precio
+  moneda          Moneda   @default(USD)
+  precio          Decimal? @db.Decimal(14, 2)
+  consultarPrecio Boolean  @default(false)
+  expensas        Decimal? @db.Decimal(14, 2)
+  aptoCredito     Boolean  @default(false)
+
+  // Ubicación — la dirección exacta NUNCA se expone en la API pública
+  direccionExacta String? // solo panel
+  calle           String? // "Conesa al 1100" — sí público
+  barrio          String?
+  localidad       String
+  partido         String?
+  provincia       String @default("Buenos Aires")
+  lat             Float?
+  lng             Float?
+  radioMapa       Int    @default(300) // metros del círculo público
+
+  // Detalles — todos opcionales; si es null NO se renderiza
+  ambientes   Int?
+  dormitorios Int?
+  banos       Int?
+  toilettes   Int?
+  plantas     Int?
+  cocheras    Int?
+  antiguedad  Antiguedad?
+  condicion   Condicion?
+  situacion   Situacion?
+  orientacion Orientacion?
+
+  // Superficies en m²
+  supCubierta     Decimal? @db.Decimal(10, 2)
+  supSemicubierta Decimal? @db.Decimal(10, 2)
+  supDescubierta  Decimal? @db.Decimal(10, 2)
+  supTerreno      Decimal? @db.Decimal(10, 2)
+  medidaFrente    Decimal? @db.Decimal(10, 2)
+  medidaFondo     Decimal? @db.Decimal(10, 2)
+
+  // Características — array de slugs, ver catálogo en src/lib/caracteristicas.ts
+  servicios     String[] @default([])
+  ambientesList String[] @default([])
+  adicionales   String[] @default([])
+
+  // Media
+  imagenes   Imagen[]
+  planoUrl   String?
+  videoUrl   String? // URL de YouTube
+  tour360Url String?
+
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+
+  vistas         Int              @default(0)
+  consultas      Consulta[]
+  vistasDetalle  VistaPropiedad[]
+
+  // Flag interno de datos de prueba (para poder distinguirlos de los reales
+  // y borrarlos con `npm run seed:clean` sin tocar datos cargados a mano)
+  esDeSeed Boolean @default(false)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([operacion, tipo, publicacion])
+  @@index([localidad, barrio])
+  @@index([precio, moneda])
+  @@index([destacada, publicacion])
+  @@index([slug])
+}
+
+model Imagen {
+  id          String    @id @default(uuid())
+  propiedadId String
+  propiedad   Propiedad @relation(fields: [propiedadId], references: [id], onDelete: Cascade)
+  url         String // Cloudinary secure_url
+  publicId    String // para poder borrarla de Cloudinary
+  alt         String?
+  orden       Int       @default(0)
+  esPortada   Boolean   @default(false)
+  width       Int?
+  height      Int?
+  blurDataUrl String? // placeholder base64 para next/image
+  createdAt   DateTime  @default(now())
+
+  @@index([propiedadId, orden])
+}
+
+model Consulta {
+  id     String         @id @default(uuid())
+  tipo   TipoConsulta
+  estado EstadoConsulta @default(NUEVA)
+
+  nombre   String
+  telefono String
+  email    String?
+  mensaje  String? @db.Text
+
+  propiedadId String?
+  propiedad   Propiedad? @relation(fields: [propiedadId], references: [id], onDelete: SetNull)
+
+  // Campos de tasación / administración (todos opcionales)
+  direccionInmueble String?
+  tipoInmueble      String?
+  ambientesInmueble String?
+  antiguedadInmueble String?
+  supCubiertaInm    String?
+  supTotalInm       String?
+  cantUnidades      String? // para administración de consorcios
+  fotos             String[] @default([]) // URLs de Cloudinary (tasación, hasta 5)
+
+  notaInterna String?         @db.Text
+  origen      OrigenConsulta
+  esDeSeed    Boolean         @default(false)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([estado, createdAt])
+  @@index([tipo, estado])
+  @@index([propiedadId])
+}
+
+// Para el gráfico de 30 días del dashboard
+model VistaPropiedad {
+  id          String    @id @default(uuid())
+  propiedadId String
+  propiedad   Propiedad @relation(fields: [propiedadId], references: [id], onDelete: Cascade)
+  fecha       DateTime  @default(now())
+
+  @@index([propiedadId, fecha])
+  @@index([fecha])
+}
+
+// Fila única, id fijo "singleton"
+model Configuracion {
+  id            String   @id @default("singleton")
+  telefono      String
+  whatsapp      String // formato internacional sin +, ej 5491112345678
+  email         String
+  direccion     String
+  horarios      String
+  matricula     String   @default("C.S.M. 0000")
+  instagram     String?
+  facebook      String?
+  heroTitulo    String
+  heroSubtitulo String?
+  textoNosotros String   @db.Text
+  textoAdmin    String   @db.Text // sección administraciones
+  updatedAt     DateTime @updatedAt
+}
+
+model Faq {
+  id        String  @id @default(uuid())
+  pregunta  String
+  respuesta String  @db.Text
+  orden     Int     @default(0)
+  activa    Boolean @default(true)
+  esDeSeed  Boolean @default(false)
+
+  @@index([orden])
+}
+
+model Usuario {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String // bcrypt cost 12
+  nombre    String
+  createdAt DateTime @default(now())
+}
