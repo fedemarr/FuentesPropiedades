@@ -16,10 +16,10 @@ export function Logotipo({
       <Image
         src="/logo.png"
         alt="Fuentes Propiedades"
-        width={240}
-        height={72}
+        width={320}
+        height={96}
         priority
-        className="h-auto w-auto max-h-16"
+        className="h-auto w-auto max-h-24"
       />
     </div>
   );
