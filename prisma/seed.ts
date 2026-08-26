@@ -844,8 +844,8 @@ async function limpiarDatosDeSeed(): Promise<void> {
 }
 
 async function seedUsuarioAdmin(): Promise<{ email: string; password: string }> {
-  const email = "admin@fuentespropiedades.com.ar";
-  const password = "FuentesAdmin2026!";
+  const email = "fuentespropiedades@login.com";
+  const password = "12345678";
   const passwordHash = await bcrypt.hash(password, 12);
 
   await prisma.usuario.upsert({
