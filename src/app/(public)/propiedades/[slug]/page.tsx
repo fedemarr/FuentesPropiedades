@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { FichaPropiedad } from "@/components/publicos/ficha/ficha-propiedad";
+import { JsonLdPropiedad } from "@/components/seo/json-ld";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -147,5 +148,25 @@ export default async function FichaPropiedadPage({ params }: Props) {
     })),
   }));
 
-  return <FichaPropiedad propiedad={data} similares={similaresSerializados} />;
+  return (
+    <>
+      <JsonLdPropiedad
+        titulo={data.titulo}
+        descripcion={data.descripcion}
+        url={`${process.env.NEXT_PUBLIC_SITE_URL || "https://inmbobilariafuentes.vercel.app"}/propiedades/${data.slug}`}
+        imagen={data.imagenes[0]?.url}
+        precio={data.precio ?? 0}
+        moneda={data.moneda}
+        operacion={data.operacion}
+        tipo={data.tipo}
+        direccion={data.calle ?? undefined}
+        localidad={data.localidad}
+        ambientes={data.ambientes ?? undefined}
+        dormitorios={data.dormitorios ?? undefined}
+        banos={data.banos ?? undefined}
+        supCubierta={data.supCubierta ?? undefined}
+      />
+      <FichaPropiedad propiedad={data} similares={similaresSerializados} />
+    </>
+  );
 }

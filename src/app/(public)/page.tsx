@@ -5,6 +5,7 @@ import { FranjaServicios } from "@/components/publicos/home/franja-servicios";
 import { BloqueEstadisticas } from "@/components/publicos/home/bloque-estadisticas";
 import { CtaTasacion } from "@/components/publicos/home/cta-tasacion";
 import { PreFooter } from "@/components/publicos/home/pre-footer";
+import { JsonLdInmobiliaria } from "@/components/seo/json-ld";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 300;
@@ -58,6 +59,7 @@ export default async function HomePage() {
 
   return (
     <>
+      <JsonLdInmobiliaria />
       <HeroHome />
       <PropiedadesDestacadas propiedades={propiedadesSerializadas} />
       <FranjaServicios />
