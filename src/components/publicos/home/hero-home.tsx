@@ -1,31 +1,47 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useRef } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function HeroHome() {
   const [operacion, setOperacion] = useState<"VENTA" | "ALQUILER">("VENTA");
   const [busqueda, setBusqueda] = useState("");
+  const sectionRef = useRef<HTMLElement>(null);
+
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end start"],
+  });
+
+  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
+  const textY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
+  const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
   return (
-    <section className="relative flex min-h-[640px] items-center overflow-hidden bg-fp-navy lg:min-h-screen">
-      {/* Imagen de fondo con parallax (placeholderUntil real image) */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage:
-            "url('https://picsum.photos/seed/fuentes-hero/1920/1080')",
-          transform: "translateY(0)",
-        }}
-      />
+    <section ref={sectionRef} className="relative flex min-h-[640px] items-center overflow-hidden bg-fp-navy lg:min-h-screen">
+      {/* Imagen de fondo con parallax */}
+      <motion.div
+        style={{ y: bgY }}
+        className="absolute inset-0 h-[130%] bg-cover bg-center bg-no-repeat"
+      >
+        <div
+          className="h-full w-full"
+          style={{
+            backgroundImage: "url('https://picsum.photos/seed/fuentes-hero/1920/1080')",
+          }}
+        />
+      </motion.div>
+
       {/* Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-fp-navy/55 to-fp-navy/75" />
 
-      <div className="fp-container relative z-10 py-20 lg:py-0">
+      <motion.div
+        style={{ y: textY, opacity }}
+        className="fp-container relative z-10 py-20 lg:py-0"
+      >
         <div className="mx-auto max-w-3xl text-center">
-          {/* Título */}
           <motion.h1
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
@@ -111,7 +127,7 @@ export function HeroHome() {
             </form>
           </motion.div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Scroll indicator */}
       <motion.div
