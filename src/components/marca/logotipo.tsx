@@ -19,10 +19,7 @@ export function Logotipo({
         width={160}
         height={48}
         priority
-        className={cn(
-          "h-auto w-auto max-h-12",
-          variante === "claro" && "brightness-0 invert"
-        )}
+        className="h-auto w-auto max-h-12"
       />
     </div>
   );
