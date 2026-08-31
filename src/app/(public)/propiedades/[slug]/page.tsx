@@ -118,6 +118,11 @@ export default async function FichaPropiedadPage({ params }: Props) {
     take: 3,
   });
 
+  const config = await prisma.configuracion.findUnique({
+    where: { id: "singleton" },
+    select: { whatsapp: true },
+  });
+
   const similaresSerializados = similares.map((p) => ({
     id: p.id,
     slug: p.slug,
@@ -166,7 +171,11 @@ export default async function FichaPropiedadPage({ params }: Props) {
         banos={data.banos ?? undefined}
         supCubierta={data.supCubierta ?? undefined}
       />
-      <FichaPropiedad propiedad={data} similares={similaresSerializados} />
+      <FichaPropiedad
+        propiedad={data}
+        similares={similaresSerializados}
+        numeroWhatsapp={config?.whatsapp || "5491112345678"}
+      />
     </>
   );
 }

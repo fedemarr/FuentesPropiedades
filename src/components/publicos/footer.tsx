@@ -17,7 +17,21 @@ const LINKS_NAVEGACION = [
   { href: "/privacidad", label: "Política de privacidad" },
 ] as const;
 
-export function FooterPublico() {
+interface FooterPublicoProps {
+  direccion: string;
+  telefono: string;
+  email: string;
+  horarios: string;
+  matricula: string;
+}
+
+export function FooterPublico({
+  direccion,
+  telefono,
+  email,
+  horarios,
+  matricula,
+}: FooterPublicoProps) {
   return (
     <footer className="bg-fp-navy text-white">
       <div className="fp-container py-16">
@@ -71,27 +85,29 @@ export function FooterPublico() {
             <ul className="space-y-3">
               <li className="flex items-start gap-3">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-fp-red" />
-                <span className="text-sm text-white/60">
-                  {"{{PENDIENTE}}"}
-                </span>
+                <span className="text-sm text-white/60">{direccion}</span>
               </li>
               <li className="flex items-start gap-3">
                 <Phone className="mt-0.5 h-4 w-4 shrink-0 text-fp-red" />
-                <span className="text-sm text-white/60">
-                  {"{{PENDIENTE}}"}
-                </span>
+                <a
+                  href={`tel:${telefono.replace(/\s|-/g, "")}`}
+                  className="text-sm text-white/60 transition-colors hover:text-fp-white"
+                >
+                  {telefono}
+                </a>
               </li>
               <li className="flex items-start gap-3">
                 <Mail className="mt-0.5 h-4 w-4 shrink-0 text-fp-red" />
-                <span className="text-sm text-white/60">
-                  {"{{PENDIENTE}}"}
-                </span>
+                <a
+                  href={`mailto:${email}`}
+                  className="text-sm text-white/60 transition-colors hover:text-fp-white"
+                >
+                  {email}
+                </a>
               </li>
               <li className="flex items-start gap-3">
                 <Clock className="mt-0.5 h-4 w-4 shrink-0 text-fp-red" />
-                <span className="text-sm text-white/60">
-                  {"{{PENDIENTE}}"}
-                </span>
+                <span className="text-sm text-white/60">{horarios}</span>
               </li>
             </ul>
           </div>
@@ -106,7 +122,7 @@ export function FooterPublico() {
             derechos reservados.
           </p>
           <p className="text-xs text-white/40">
-            C.S.M. 0000 · Matrícula martillera pública
+            {matricula} · Matrícula martillera pública
           </p>
         </div>
       </div>

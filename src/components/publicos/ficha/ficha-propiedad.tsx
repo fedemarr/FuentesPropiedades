@@ -82,9 +82,10 @@ interface FichaData {
 interface FichaPropiedadProps {
   propiedad: FichaData;
   similares: PropiedadCardData[];
+  numeroWhatsapp: string;
 }
 
-export function FichaPropiedad({ propiedad, similares }: FichaPropiedadProps) {
+export function FichaPropiedad({ propiedad, similares, numeroWhatsapp }: FichaPropiedadProps) {
   const [indiceGaleria, setIndiceGaleria] = useState(0);
   const [showBarra, setShowBarra] = useState(false);
   const [favorito, setFavorito] = useState(false);
@@ -159,7 +160,7 @@ export function FichaPropiedad({ propiedad, similares }: FichaPropiedadProps) {
           </div>
           <a
             href={waLink(
-              "5491112345678",
+              numeroWhatsapp,
               waMensajePropiedad(propiedad.codigo, propiedad.titulo, propiedad.slug, dominio),
             )}
             target="_blank"
@@ -414,7 +415,7 @@ export function FichaPropiedad({ propiedad, similares }: FichaPropiedadProps) {
 
               <a
                 href={waLink(
-                  "5491112345678",
+                  numeroWhatsapp,
                   waMensajePropiedad(propiedad.codigo, propiedad.titulo, propiedad.slug, dominio),
                 )}
                 target="_blank"

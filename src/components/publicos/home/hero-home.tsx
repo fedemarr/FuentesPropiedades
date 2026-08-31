@@ -22,14 +22,11 @@ export function HeroHome() {
   return (
     <section ref={sectionRef} className="relative flex min-h-[640px] items-center overflow-hidden bg-fp-navy lg:min-h-screen">
       {/* Imagen de fondo con parallax */}
-      <motion.div
-        style={{ y: bgY }}
-        className="absolute inset-0 h-[130%] bg-cover bg-center bg-no-repeat"
-      >
+      <motion.div style={{ y: bgY }} className="absolute inset-0 h-[130%]">
         <div
-          className="h-full w-full"
+          className="h-full w-full bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: "url('https://picsum.photos/seed/fuentes-hero/1920/1080')",
+            backgroundImage: "url('/fotoparainiciotrasnparente.jpeg')",
           }}
         />
       </motion.div>

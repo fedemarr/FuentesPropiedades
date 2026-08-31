@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { prisma } from "@/lib/prisma";
 
 export const revalidate = 300;
 
@@ -6,7 +7,13 @@ export const metadata: Metadata = {
   title: "Política de Privacidad — Fuentes Propiedades",
 };
 
-export default function PrivacidadPage() {
+export default async function PrivacidadPage() {
+  const config = await prisma.configuracion.findUnique({
+    where: { id: "singleton" },
+    select: { email: true },
+  });
+  const email = config?.email || "{{PENDIENTE}}";
+
   return (
     <>
       <section className="relative flex min-h-[400px] items-center overflow-hidden bg-fp-navy lg:min-h-[480px]">
@@ -73,7 +80,7 @@ export default function PrivacidadPage() {
               <p>
                 Si tenés preguntas sobre esta política de privacidad o sobre el
                 tratamiento de tus datos personales, podés escribirnos a{" "}
-                <span className="font-medium text-fp-ink">{"{{PENDIENTE}}"}</span>.
+                <span className="font-medium text-fp-ink">{email}</span>.
               </p>
             </div>
 
