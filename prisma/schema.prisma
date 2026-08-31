@@ -271,7 +271,7 @@ model Configuracion {
   email         String
   direccion     String
   horarios      String
-  matricula     String   @default("C.S.M. 0000")
+  matricula     String   @default("CMCPSM 3032")
   instagram     String?
   facebook      String?
   heroTitulo    String

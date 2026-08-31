@@ -13,7 +13,7 @@ async function obtenerConfiguracion() {
       whatsapp: "5491112345678",
       email: "{{PENDIENTE}}",
       horarios: "{{PENDIENTE}}",
-      matricula: "C.S.M. 0000",
+      matricula: "CMCPSM 3032",
     }
   );
 }

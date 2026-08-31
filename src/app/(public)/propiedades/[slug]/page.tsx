@@ -120,7 +120,7 @@ export default async function FichaPropiedadPage({ params }: Props) {
 
   const config = await prisma.configuracion.findUnique({
     where: { id: "singleton" },
-    select: { whatsapp: true },
+    select: { whatsapp: true, matricula: true },
   });
 
   const similaresSerializados = similares.map((p) => ({
@@ -175,6 +175,7 @@ export default async function FichaPropiedadPage({ params }: Props) {
         propiedad={data}
         similares={similaresSerializados}
         numeroWhatsapp={config?.whatsapp || "5491112345678"}
+        matricula={config?.matricula || "CMCPSM 3032"}
       />
     </>
   );

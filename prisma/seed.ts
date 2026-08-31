@@ -874,14 +874,14 @@ async function seedConfiguracion(): Promise<void> {
       // Mariana confirmó el horario por WhatsApp (30/08); asumí "lunes a
       // viernes" porque no lo aclaró — avisale si algún día es distinto.
       horarios: "Lunes a viernes de 9 a 13 hs y de 15:30 a 20 hs",
-      matricula: "C.S.M. 0000", // todavía no mandó el número de matrícula
+      matricula: "CMCPSM 3032",
       instagram: null,
       facebook: null,
       heroTitulo: "Encontrá tu próxima propiedad en zona norte del GBA",
       heroSubtitulo:
         "Venta, alquiler y administración de propiedades en San Miguel, Bella Vista, Muñiz, Los Polvorines y alrededores.",
       textoNosotros:
-        "Soy Mariana Fuentes, martillera pública matriculada (C.S.M. 0000), especializada en zona norte del Gran Buenos Aires.\n\nEn Fuentes Propiedades brindamos un servicio inmobiliario personalizado, profesional y cercano. Acompañamos a nuestros clientes en cada etapa del proceso, ya sea para comprar, vender, alquilar o administrar una propiedad, ofreciendo asesoramiento claro y atención personalizada.\n\nNuestro objetivo es que cada operación se realice con seguridad, transparencia y confianza, cuidando los intereses de nuestros clientes y buscando siempre las mejores alternativas.\n\nCubro San Miguel, Bella Vista, Muñiz, Los Polvorines, Del Viso, Tortuguitas y alrededores. Conozco cada barrio, cada calle y cada tendencia del mercado local.",
+        "Soy Mariana Fuentes, martillera pública matriculada (CMCPSM 3032), especializada en zona norte del Gran Buenos Aires.\n\nEn Fuentes Propiedades brindamos un servicio inmobiliario personalizado, profesional y cercano. Acompañamos a nuestros clientes en cada etapa del proceso, ya sea para comprar, vender, alquilar o administrar una propiedad, ofreciendo asesoramiento claro y atención personalizada.\n\nNuestro objetivo es que cada operación se realice con seguridad, transparencia y confianza, cuidando los intereses de nuestros clientes y buscando siempre las mejores alternativas.\n\nCubro San Miguel, Bella Vista, Muñiz, Los Polvorines, Del Viso, Tortuguitas y alrededores. Conozco cada barrio, cada calle y cada tendencia del mercado local.",
       textoAdmin:
         "Administro tu propiedad de punta a punta: cobro de alquileres, control de pagos de expensas y servicios, gestión de reclamos, rendición mensual clara y seguimiento de las actualizaciones del contrato según el índice que corresponda. Vos recibís un informe cada mes sin tener que ocuparte del día a día.",
     },

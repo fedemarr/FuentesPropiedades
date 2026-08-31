@@ -83,9 +83,10 @@ interface FichaPropiedadProps {
   propiedad: FichaData;
   similares: PropiedadCardData[];
   numeroWhatsapp: string;
+  matricula: string;
 }
 
-export function FichaPropiedad({ propiedad, similares, numeroWhatsapp }: FichaPropiedadProps) {
+export function FichaPropiedad({ propiedad, similares, numeroWhatsapp, matricula }: FichaPropiedadProps) {
   const [indiceGaleria, setIndiceGaleria] = useState(0);
   const [showBarra, setShowBarra] = useState(false);
   const [favorito, setFavorito] = useState(false);
@@ -434,7 +435,7 @@ export function FichaPropiedad({ propiedad, similares, numeroWhatsapp }: FichaPr
                 </div>
                 <div>
                   <p className="text-fp-small font-semibold text-fp-ink">Fuentes Propiedades</p>
-                  <p className="text-fp-small text-fp-slate">C.S.M. 0000</p>
+                  <p className="text-fp-small text-fp-slate">{matricula}</p>
                 </div>
               </div>
             </div>
