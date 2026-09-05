@@ -25,16 +25,19 @@ import { SeccionFotos } from "@/components/admin/propiedades/secciones/fotos";
 import { SeccionMediaAdicional } from "@/components/admin/propiedades/secciones/media-adicional";
 import { SeccionSeo } from "@/components/admin/propiedades/secciones/seo";
 
+// Prefijadas con "seccion-" a propósito: varias coinciden con el nombre de
+// un campo del formulario (ej. la sección "precio" y el input #precio) y
+// dos elementos con el mismo id en la página es HTML inválido.
 const SECCIONES: AnclaSeccion[] = [
-  { id: "info-basica", label: "Información básica" },
-  { id: "precio", label: "Precio" },
-  { id: "ubicacion", label: "Ubicación" },
-  { id: "detalles", label: "Detalles" },
-  { id: "superficies", label: "Superficies" },
-  { id: "caracteristicas", label: "Características" },
-  { id: "fotos", label: "Fotos" },
-  { id: "media", label: "Media adicional" },
-  { id: "seo", label: "SEO" },
+  { id: "seccion-info-basica", label: "Información básica" },
+  { id: "seccion-precio", label: "Precio" },
+  { id: "seccion-ubicacion", label: "Ubicación" },
+  { id: "seccion-detalles", label: "Detalles" },
+  { id: "seccion-superficies", label: "Superficies" },
+  { id: "seccion-caracteristicas", label: "Características" },
+  { id: "seccion-fotos", label: "Fotos" },
+  { id: "seccion-media", label: "Media adicional" },
+  { id: "seccion-seo", label: "SEO" },
 ];
 
 interface FormularioPropiedadProps {
@@ -163,7 +166,7 @@ export function FormularioPropiedad({
             className="flex flex-col gap-4"
           >
             <SeccionFormulario
-              id="info-basica"
+              id="seccion-info-basica"
               numero={1}
               titulo="Información básica"
               descripcion="Operación, tipo, título y descripción"
@@ -172,7 +175,7 @@ export function FormularioPropiedad({
             </SeccionFormulario>
 
             <SeccionFormulario
-              id="precio"
+              id="seccion-precio"
               numero={2}
               titulo="Precio"
               descripcion="Moneda, precio, expensas y apto crédito"
@@ -181,7 +184,7 @@ export function FormularioPropiedad({
             </SeccionFormulario>
 
             <SeccionFormulario
-              id="ubicacion"
+              id="seccion-ubicacion"
               numero={3}
               titulo="Ubicación"
               descripcion="Dirección, barrio y ubicación en el mapa"
@@ -190,7 +193,7 @@ export function FormularioPropiedad({
             </SeccionFormulario>
 
             <SeccionFormulario
-              id="detalles"
+              id="seccion-detalles"
               numero={4}
               titulo="Detalles"
               descripcion="Ambientes, dormitorios, baños y más"
@@ -199,7 +202,7 @@ export function FormularioPropiedad({
             </SeccionFormulario>
 
             <SeccionFormulario
-              id="superficies"
+              id="seccion-superficies"
               numero={5}
               titulo="Superficies"
               descripcion="Cubierta, semicubierta, terreno, frente y fondo"
@@ -208,7 +211,7 @@ export function FormularioPropiedad({
             </SeccionFormulario>
 
             <SeccionFormulario
-              id="caracteristicas"
+              id="seccion-caracteristicas"
               numero={6}
               titulo="Características"
               descripcion="Servicios, ambientes y adicionales"
@@ -217,7 +220,7 @@ export function FormularioPropiedad({
             </SeccionFormulario>
 
             <SeccionFormulario
-              id="fotos"
+              id="seccion-fotos"
               numero={7}
               titulo="Fotos"
               descripcion="Subí fotos, reordenalas y marcala como portada"
@@ -226,7 +229,7 @@ export function FormularioPropiedad({
             </SeccionFormulario>
 
             <SeccionFormulario
-              id="media"
+              id="seccion-media"
               numero={8}
               titulo="Media adicional"
               descripcion="Plano, video de YouTube y tour 360"
@@ -236,7 +239,7 @@ export function FormularioPropiedad({
             </SeccionFormulario>
 
             <SeccionFormulario
-              id="seo"
+              id="seccion-seo"
               numero={9}
               titulo="SEO"
               descripcion="Meta title y description para buscadores"

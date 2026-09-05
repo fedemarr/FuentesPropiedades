@@ -1,13 +1,26 @@
 "use client";
 
 import { useState, useCallback, useTransition } from "react";
+import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SidebarFiltros } from "./sidebar-filtros";
 import { BarraResultados } from "./barra-resultados";
 import { GrillaPropiedades } from "./grilla-propiedades";
-import { VistaMapa } from "./vista-mapa";
 import { PaginacionListado } from "./paginacion-listado";
 import type { PropiedadCardData } from "@/components/publicos/card-propiedad";
+
+// Leaflet toca `window` apenas se importa el módulo (no solo al renderizar),
+// así que una importación estática rompe el server-side rendering de esta
+// página entera ("ReferenceError: window is not defined"). Esto era la
+// causa real del listado "trabado" — la página crasheaba en el servidor.
+const VistaMapa = dynamic(() => import("./vista-mapa").then((m) => m.VistaMapa), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-[600px] items-center justify-center rounded-[--radius-fp-lg] bg-fp-bone text-fp-slate lg:h-[700px]">
+      Cargando mapa…
+    </div>
+  ),
+});
 
 interface ListadoPropiedadesProps {
   propiedades: PropiedadCardData[];

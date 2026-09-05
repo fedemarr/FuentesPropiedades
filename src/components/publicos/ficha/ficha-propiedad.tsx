@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 
 import {
   Heart,
@@ -22,6 +23,18 @@ import { LABEL_OPERACION, LABEL_TIPO_PROPIEDAD, LABEL_ANTIGUEDAD, LABEL_CONDICIO
 import { labelDeCaracteristica } from "@/lib/caracteristicas";
 import { waLink, waMensajePropiedad } from "@/lib/whatsapp";
 import { CardPropiedad, type PropiedadCardData } from "@/components/publicos/card-propiedad";
+
+const MapaUbicacion = dynamic(
+  () => import("./mapa-ubicacion").then((m) => m.MapaUbicacion),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full items-center justify-center bg-fp-bone text-fp-small text-fp-slate">
+        Cargando mapa…
+      </div>
+    ),
+  },
+);
 
 interface FichaData {
   id: string;
@@ -382,10 +395,11 @@ export function FichaPropiedad({ propiedad, similares, numeroWhatsapp, matricula
               <section>
                 <h2 className="text-fp-h2 mb-4 text-fp-ink">Ubicación</h2>
                 <div className="relative h-[400px] overflow-hidden rounded-[--radius-fp-md] border border-fp-line">
-                  <div className="absolute inset-0 bg-fp-bone flex items-center justify-center text-fp-slate text-sm">
-                    Mapa — {propiedad.lat.toFixed(4)}, {propiedad.lng.toFixed(4)}
-                    <br />Radio: {propiedad.radioMapa}m
-                  </div>
+                  <MapaUbicacion
+                    lat={propiedad.lat}
+                    lng={propiedad.lng}
+                    radioMapa={propiedad.radioMapa}
+                  />
                 </div>
                 <p className="text-fp-small mt-2 text-fp-slate">
                   La ubicación es aproximada por razones de privacidad.

@@ -89,7 +89,7 @@ export function VistaMapa({ propiedades }: VistaMapaProps) {
         center={center}
         zoom={13}
         className="h-full flex-1"
-        scrollWheelZoom
+        scrollWheelZoom={false}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
