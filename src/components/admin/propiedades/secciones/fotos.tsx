@@ -47,6 +47,13 @@ export function SeccionFotos({ carpetaCloudinary }: SeccionFotosProps) {
     const lista = Array.from(archivos).filter((a) => a.type.startsWith("image/"));
     if (lista.length === 0) return;
 
+    // `fields` es una foto fija del array al momento de este render — no se
+    // actualiza sola entre `await`s dentro del mismo loop. Si se suben 2+
+    // fotos juntas, leer `fields.length` de nuevo en cada vuelta hacía que
+    // todas vieran "todavía no hay ninguna" y quedaran marcadas como
+    // portada al mismo tiempo. Este contador local sí avanza en cada vuelta.
+    let indiceSiguiente = fields.length;
+
     for (const archivo of lista) {
       const idTemporal = `${archivo.name}-${Date.now()}-${Math.random()}`;
       setSubidas((prev) => [...prev, { id: idTemporal, nombre: archivo.name, progreso: 0 }]);
@@ -65,9 +72,10 @@ export function SeccionFotos({ carpetaCloudinary }: SeccionFotosProps) {
           height: resultado.height,
           blurDataUrl: comprimida.blurDataUrl,
           alt: null,
-          orden: fields.length,
-          esPortada: fields.length === 0,
+          orden: indiceSiguiente,
+          esPortada: indiceSiguiente === 0,
         });
+        indiceSiguiente++;
       } catch (error) {
         toast.error(
           error instanceof Error ? error.message : `No se pudo subir "${archivo.name}".`,
