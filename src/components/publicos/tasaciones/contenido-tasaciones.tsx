@@ -1,16 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { Check, ChevronLeft, ChevronRight, MessageCircle } from "lucide-react";
+import Image from "next/image";
+import { Check, ChevronLeft, ChevronRight, Loader2, MessageCircle, Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LABEL_TIPO_PROPIEDAD } from "@/lib/enum-labels";
 import { LABEL_ANTIGUEDAD } from "@/lib/enum-labels";
 import { LABEL_CONDICION } from "@/lib/enum-labels";
 import { waLink, waMensajeTasacion } from "@/lib/whatsapp";
+import { comprimirImagen } from "@/lib/comprimir-imagen";
+import { subirImagenACloudinary } from "@/lib/cloudinary-upload-cliente";
+import { enviarTasacion, obtenerFirmaUploadTasacion } from "@/app/(public)/tasaciones/actions";
 
 const PASOS = ["Sobre el inmueble", "Detalles", "Tus datos"];
+const MAX_FOTOS = 5;
 
 interface DatosTasacion {
   tipo: string;
@@ -61,26 +66,85 @@ interface ContenidoTasacionesProps {
   numeroWhatsapp: string;
 }
 
+interface SubidaEnProgreso {
+  id: string;
+  nombre: string;
+  progreso: number;
+}
+
 export function ContenidoTasaciones({ numeroWhatsapp }: ContenidoTasacionesProps) {
   const [paso, setPaso] = useState(0);
   const [datos, setDatos] = useState<DatosTasacion>(ESTADO_INICIAL);
   const [enviado, setEnviado] = useState(false);
+  const [enviando, setEnviando] = useState(false);
   const [errores, setErrores] = useState<string | null>(null);
+  const [fotos, setFotos] = useState<string[]>([]);
+  const [subidas, setSubidas] = useState<SubidaEnProgreso[]>([]);
+  const inputFotosRef = useRef<HTMLInputElement>(null);
+  const [tiempoInicioMs] = useState(() => Date.now());
+  const [honeypot, setHoneypot] = useState("");
 
   function actualizar<K extends keyof DatosTasacion>(campo: K, valor: string) {
     setDatos((prev) => ({ ...prev, [campo]: valor }));
     setErrores(null);
   }
 
-  function siguiente() {
+  async function subirFotos(archivos: FileList | File[]) {
+    const disponibles = MAX_FOTOS - fotos.length - subidas.length;
+    const lista = Array.from(archivos)
+      .filter((a) => a.type.startsWith("image/"))
+      .slice(0, Math.max(0, disponibles));
+
+    for (const archivo of lista) {
+      const idTemporal = `${archivo.name}-${Date.now()}-${Math.random()}`;
+      setSubidas((prev) => [...prev, { id: idTemporal, nombre: archivo.name, progreso: 0 }]);
+      try {
+        const comprimida = await comprimirImagen(archivo);
+        const firma = await obtenerFirmaUploadTasacion();
+        const resultado = await subirImagenACloudinary(comprimida.archivo, firma, (p) => {
+          setSubidas((prev) => prev.map((s) => (s.id === idTemporal ? { ...s, progreso: p } : s)));
+        });
+        setFotos((prev) => [...prev, resultado.url]);
+      } catch (error) {
+        setErrores(error instanceof Error ? error.message : "No se pudo subir una de las fotos.");
+      } finally {
+        setSubidas((prev) => prev.filter((s) => s.id !== idTemporal));
+      }
+    }
+  }
+
+  async function siguiente() {
     if (!validarPaso(paso, datos)) {
       if (paso === 0) setErrores("Completá el tipo de propiedad y la dirección o barrio.");
       else if (paso === 1) setErrores("Seleccioná la condición del inmueble.");
       else if (paso === 2) setErrores("Completá tu nombre y teléfono.");
       return;
     }
-    if (paso < PASOS.length - 1) setPaso(paso + 1);
-    else setEnviado(true);
+
+    if (paso < PASOS.length - 1) {
+      setPaso(paso + 1);
+      return;
+    }
+
+    setEnviando(true);
+    setErrores(null);
+    try {
+      const resultado = await enviarTasacion({
+        ...datos,
+        fotos,
+        honeypot,
+        tiempoInicioMs,
+      });
+      if (!resultado.ok) {
+        setErrores(resultado.error ?? "No se pudo enviar la solicitud. Probá de nuevo.");
+        return;
+      }
+      setEnviado(true);
+    } catch {
+      setErrores("No se pudo enviar la solicitud. Probá de nuevo o escribinos por WhatsApp.");
+    } finally {
+      setEnviando(false);
+    }
   }
 
   function anterior() {
@@ -188,7 +252,25 @@ export function ContenidoTasaciones({ numeroWhatsapp }: ContenidoTasacionesProps
             </div>
           </div>
 
-          <div className="rounded-[--radius-fp-lg] border border-fp-line bg-fp-white p-6 shadow-fp-sm lg:p-8">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              void siguiente();
+            }}
+            className="rounded-[--radius-fp-lg] border border-fp-line bg-fp-white p-6 shadow-fp-sm lg:p-8"
+          >
+            {/* Honeypot — invisible para una persona, tentador para un bot */}
+            <input
+              type="text"
+              name="sitio_web"
+              value={honeypot}
+              onChange={(e) => setHoneypot(e.target.value)}
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              className="absolute -left-[9999px] h-0 w-0 opacity-0"
+            />
+
             <AnimatePresence mode="wait">
               {paso === 0 && (
                 <motion.div
@@ -327,6 +409,54 @@ export function ContenidoTasaciones({ numeroWhatsapp }: ContenidoTasacionesProps
                       className="w-full rounded-[--radius-fp-md] border border-fp-line bg-fp-white px-4 py-3 text-fp-body text-fp-ink outline-none placeholder:text-fp-slate focus:border-fp-navy focus:ring-1 focus:ring-fp-navy resize-none"
                     />
                   </div>
+
+                  <div>
+                    <label className="text-fp-label text-fp-slate mb-1.5 block">
+                      Fotos (opcional, hasta {MAX_FOTOS})
+                    </label>
+                    <input
+                      ref={inputFotosRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={(e) => {
+                        if (e.target.files) void subirFotos(e.target.files);
+                        e.target.value = "";
+                      }}
+                    />
+                    <div className="flex flex-wrap gap-3">
+                      {fotos.map((url, i) => (
+                        <div key={url} className="relative size-20 overflow-hidden rounded-[--radius-fp-md] border border-fp-line">
+                          <Image src={url} alt="" fill sizes="80px" className="object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => setFotos((prev) => prev.filter((_, idx) => idx !== i))}
+                            aria-label="Sacar foto"
+                            className="absolute top-0.5 right-0.5 flex size-5 items-center justify-center rounded-full bg-black/60 text-white"
+                          >
+                            <X className="size-3" />
+                          </button>
+                        </div>
+                      ))}
+                      {subidas.map((s) => (
+                        <div key={s.id} className="flex size-20 flex-col items-center justify-center gap-1 rounded-[--radius-fp-md] border border-dashed border-fp-line bg-fp-bone text-fp-slate">
+                          <Loader2 className="size-4 animate-spin" />
+                          <span className="text-[10px]">{s.progreso}%</span>
+                        </div>
+                      ))}
+                      {fotos.length + subidas.length < MAX_FOTOS && (
+                        <button
+                          type="button"
+                          onClick={() => inputFotosRef.current?.click()}
+                          className="flex size-20 flex-col items-center justify-center gap-1 rounded-[--radius-fp-md] border border-dashed border-fp-line text-fp-slate transition-colors hover:border-fp-navy hover:text-fp-navy"
+                        >
+                          <Upload className="size-4" />
+                          <span className="text-[10px]">Subir</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </motion.div>
               )}
 
@@ -387,7 +517,7 @@ export function ContenidoTasaciones({ numeroWhatsapp }: ContenidoTasacionesProps
               <button
                 type="button"
                 onClick={anterior}
-                disabled={paso === 0}
+                disabled={paso === 0 || enviando}
                 className={cn(
                   "inline-flex items-center gap-2 rounded-[--radius-fp-md] px-5 py-2.5 text-sm font-semibold transition-colors",
                   paso === 0
@@ -399,15 +529,24 @@ export function ContenidoTasaciones({ numeroWhatsapp }: ContenidoTasacionesProps
                 Anterior
               </button>
               <button
-                type="button"
-                onClick={siguiente}
-                className="inline-flex items-center gap-2 rounded-[--radius-fp-md] bg-fp-red px-6 py-3 text-sm font-semibold text-fp-white transition-colors hover:bg-fp-red-700"
+                type="submit"
+                disabled={enviando}
+                className="inline-flex items-center gap-2 rounded-[--radius-fp-md] bg-fp-red px-6 py-3 text-sm font-semibold text-fp-white transition-colors hover:bg-fp-red-700 disabled:opacity-60"
               >
-                {paso === PASOS.length - 1 ? "Enviar solicitud" : "Siguiente"}
-                {paso < PASOS.length - 1 && <ChevronRight className="h-4 w-4" />}
+                {enviando ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Enviando…
+                  </>
+                ) : (
+                  <>
+                    {paso === PASOS.length - 1 ? "Enviar solicitud" : "Siguiente"}
+                    {paso < PASOS.length - 1 && <ChevronRight className="h-4 w-4" />}
+                  </>
+                )}
               </button>
             </div>
-          </div>
+          </form>
         </div>
       </div>
     </section>

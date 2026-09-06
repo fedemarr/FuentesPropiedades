@@ -18,10 +18,7 @@ export function CtaTasacion() {
           >
             <div
               className="h-full w-full bg-cover bg-center"
-              style={{
-                backgroundImage:
-                  "url('https://picsum.photos/seed/fuentes-tasacion/800/1000')",
-              }}
+              style={{ backgroundImage: "url('/fotomaria.jpeg')" }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-fp-navy/40 to-transparent" />
           </motion.div>

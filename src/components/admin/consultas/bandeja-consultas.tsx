@@ -2,7 +2,8 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import {
   X,
@@ -36,6 +37,8 @@ import {
 import {
   LABEL_TIPO_CONSULTA,
   LABEL_ESTADO_CONSULTA,
+  LABEL_TIPO_PROPIEDAD,
+  LABEL_ANTIGUEDAD,
 } from "@/lib/enum-labels";
 import { waLink, waMensajeAdminInteresado } from "@/lib/whatsapp";
 import { cambiarEstadoConsulta, guardarNotaConsulta } from "@/app/admin/consultas/actions";
@@ -54,9 +57,28 @@ type ConsultaFila = {
   origen: string;
   createdAt: Date;
   propiedad: { codigo: string; titulo: string } | null;
+  // Tasación
+  direccionInmueble: string | null;
+  tipoInmueble: string | null;
+  ambientesInmueble: string | null;
+  antiguedadInmueble: string | null;
+  supCubiertaInm: string | null;
+  supTotalInm: string | null;
+  fotos: string[];
+  // Administración
+  cantUnidades: string | null;
 };
 
 type TipoTab = "todas" | "nuevas" | "contactadas" | "cerradas" | "tasaciones" | "administraciones";
+
+const TABS_VALIDOS: readonly TipoTab[] = [
+  "todas",
+  "nuevas",
+  "contactadas",
+  "cerradas",
+  "tasaciones",
+  "administraciones",
+];
 
 interface BandejaConsultasProps {
   consultas: ConsultaFila[];
@@ -79,8 +101,12 @@ export function BandejaConsultas({
   contadores,
 }: BandejaConsultasProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [seleccionada, setSeleccionada] = useState<ConsultaFila | null>(null);
-  const [tab, setTab] = useState<TipoTab>("todas");
+  const tabInicial = searchParams.get("tab");
+  const [tab, setTab] = useState<TipoTab>(
+    TABS_VALIDOS.includes(tabInicial as TipoTab) ? (tabInicial as TipoTab) : "todas",
+  );
   const [pendiente, iniciarTransicion] = useTransition();
 
   function filtradas(): ConsultaFila[] {
@@ -371,6 +397,77 @@ function PanelConsulta({
             <p className="whitespace-pre-wrap rounded-fp-md bg-fp-bone p-3 text-fp-body text-fp-ink">
               {consulta.mensaje}
             </p>
+          </div>
+        )}
+
+        {consulta.tipo === "TASACION" && (
+          <div className="flex flex-col gap-3 rounded-fp-md border border-fp-line p-3">
+            <span className="text-fp-label text-fp-navy">Datos del inmueble a tasar</span>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-fp-small">
+              {consulta.direccionInmueble && (
+                <div className="col-span-2">
+                  <span className="text-fp-slate">Dirección: </span>
+                  <span className="text-fp-ink">{consulta.direccionInmueble}</span>
+                </div>
+              )}
+              {consulta.tipoInmueble && (
+                <div>
+                  <span className="text-fp-slate">Tipo: </span>
+                  <span className="text-fp-ink">
+                    {LABEL_TIPO_PROPIEDAD[consulta.tipoInmueble] ?? consulta.tipoInmueble}
+                  </span>
+                </div>
+              )}
+              {consulta.ambientesInmueble && (
+                <div>
+                  <span className="text-fp-slate">Ambientes: </span>
+                  <span className="text-fp-ink">{consulta.ambientesInmueble}</span>
+                </div>
+              )}
+              {consulta.antiguedadInmueble && (
+                <div>
+                  <span className="text-fp-slate">Antigüedad: </span>
+                  <span className="text-fp-ink">
+                    {LABEL_ANTIGUEDAD[consulta.antiguedadInmueble] ?? consulta.antiguedadInmueble}
+                  </span>
+                </div>
+              )}
+              {consulta.supCubiertaInm && (
+                <div>
+                  <span className="text-fp-slate">Sup. cubierta: </span>
+                  <span className="text-fp-ink">{consulta.supCubiertaInm} m²</span>
+                </div>
+              )}
+              {consulta.supTotalInm && (
+                <div>
+                  <span className="text-fp-slate">Sup. total: </span>
+                  <span className="text-fp-ink">{consulta.supTotalInm} m²</span>
+                </div>
+              )}
+            </div>
+
+            {consulta.fotos.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {consulta.fotos.map((url) => (
+                  <a
+                    key={url}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="relative size-16 overflow-hidden rounded-fp-sm border border-fp-line"
+                  >
+                    <Image src={url} alt="Foto del inmueble" fill sizes="64px" className="object-cover" />
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {consulta.tipo === "ADMINISTRACION" && consulta.cantUnidades && (
+          <div className="flex flex-col gap-1">
+            <span className="text-fp-label text-fp-slate">Cantidad de unidades</span>
+            <span className="text-fp-body text-fp-ink">{consulta.cantUnidades}</span>
           </div>
         )}
 
