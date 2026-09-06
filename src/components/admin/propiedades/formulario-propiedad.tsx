@@ -84,6 +84,10 @@ export function FormularioPropiedad({
       try {
         const datos = getValues();
         const resultado = await guardarPropiedad(id, datos, publicacion);
+        if (!resultado.ok) {
+          toast.error(resultado.error);
+          return;
+        }
         if (!id) {
           router.replace(`/admin/propiedades/${resultado.id}`);
         }

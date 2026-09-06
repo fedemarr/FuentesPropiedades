@@ -27,11 +27,9 @@ function autogenerarMetaDescription(datos: DatosPropiedad): string {
   return texto.length > 155 ? `${texto.slice(0, 152)}...` : texto;
 }
 
-interface ResultadoGuardar {
-  id: string;
-  slug: string;
-  codigo: string;
-}
+export type ResultadoGuardar =
+  | { ok: true; id: string; slug: string; codigo: string }
+  | { ok: false; error: string };
 
 /**
  * Crea o actualiza una propiedad.
@@ -41,6 +39,14 @@ interface ResultadoGuardar {
  * cambian los botones explícitos "Guardar borrador" / "Publicar". Una
  * propiedad nueva que todavía no pasó por ninguno de los dos botones nace
  * en BORRADOR.
+ *
+ * Devuelve un resultado en vez de lanzar una excepción ante datos
+ * inválidos: un error de validación es esperable (la usuaria dejó un campo
+ * corto), no una falla real. Next.js oculta el mensaje de cualquier error
+ * *lanzado* desde un Server Action en producción por seguridad — si esto
+ * lanzara una excepción, en vez del mensaje en español ("Escribí una
+ * descripción...") se vería la pantalla genérica "An error occurred in
+ * the Server Components render...".
  */
 export async function guardarPropiedad(
   id: string | null,
@@ -52,7 +58,7 @@ export async function guardarPropiedad(
   const resultado = esquemaPropiedad.safeParse(datosSinValidar);
   if (!resultado.success) {
     const primerError = resultado.error.issues[0];
-    throw new Error(primerError?.message ?? "Revisá los datos del formulario.");
+    return { ok: false, error: primerError?.message ?? "Revisá los datos del formulario." };
   }
   const datos = resultado.data;
 
@@ -131,7 +137,7 @@ export async function guardarPropiedad(
       },
     });
     revalidarPropiedad(propiedad.slug);
-    return { id: propiedad.id, slug: propiedad.slug, codigo: propiedad.codigo };
+    return { ok: true, id: propiedad.id, slug: propiedad.slug, codigo: propiedad.codigo };
   }
 
   const codigo = await generarSiguienteCodigo(prisma);
@@ -148,7 +154,7 @@ export async function guardarPropiedad(
   });
 
   revalidarPropiedad(propiedad.slug);
-  return { id: propiedad.id, slug: propiedad.slug, codigo: propiedad.codigo };
+  return { ok: true, id: propiedad.id, slug: propiedad.slug, codigo: propiedad.codigo };
 }
 
 async function obtenerCodigo(id: string): Promise<string | null> {
