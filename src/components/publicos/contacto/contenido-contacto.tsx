@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Phone, Mail, MapPin, Clock, Send } from "lucide-react";
+import { Phone, Mail, MapPin, Clock, Send, Loader2 } from "lucide-react";
+import { enviarContacto } from "@/app/(public)/contacto/actions";
 
 interface ContenidoContactoProps {
   telefonoNegocio: string;
@@ -28,10 +29,34 @@ export function ContenidoContacto({
   const [telefono, setTelefono] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [enviado, setEnviado] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [honeypot, setHoneypot] = useState("");
+  const [tiempoInicioMs] = useState(() => Date.now());
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setEnviado(true);
+    setEnviando(true);
+    setError(null);
+    try {
+      const resultado = await enviarContacto({
+        nombre,
+        email,
+        telefono,
+        mensaje,
+        honeypot,
+        tiempoInicioMs,
+      });
+      if (!resultado.ok) {
+        setError(resultado.error ?? "No se pudo enviar el mensaje. Probá de nuevo.");
+        return;
+      }
+      setEnviado(true);
+    } catch {
+      setError("No se pudo enviar el mensaje. Probá de nuevo o escribinos por WhatsApp.");
+    } finally {
+      setEnviando(false);
+    }
   }
 
   return (
@@ -75,6 +100,16 @@ export function ContenidoContacto({
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+                  <input
+                    type="text"
+                    name="sitio_web"
+                    value={honeypot}
+                    onChange={(e) => setHoneypot(e.target.value)}
+                    tabIndex={-1}
+                    autoComplete="off"
+                    aria-hidden="true"
+                    className="absolute -left-[9999px] h-0 w-0 opacity-0"
+                  />
                   <div>
                     <label className="text-fp-label text-fp-slate mb-1.5 block">
                       Nombre
@@ -128,12 +163,26 @@ export function ContenidoContacto({
                       className="w-full rounded-[--radius-fp-md] border border-fp-line bg-fp-white px-4 py-3 text-fp-body text-fp-ink outline-none placeholder:text-fp-slate focus:border-fp-navy focus:ring-1 focus:ring-fp-navy resize-none"
                     />
                   </div>
+                  {error && (
+                    <p className="text-fp-small text-fp-error">{error}</p>
+                  )}
+
                   <button
                     type="submit"
-                    className="inline-flex items-center gap-2 rounded-[--radius-fp-md] bg-fp-red px-8 py-3.5 text-sm font-semibold text-fp-white transition-colors hover:bg-fp-red-700"
+                    disabled={enviando}
+                    className="inline-flex items-center gap-2 rounded-[--radius-fp-md] bg-fp-red px-8 py-3.5 text-sm font-semibold text-fp-white transition-colors hover:bg-fp-red-700 disabled:opacity-60"
                   >
-                    <Send className="h-4 w-4" />
-                    Enviar mensaje
+                    {enviando ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Enviando…
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4" />
+                        Enviar mensaje
+                      </>
+                    )}
                   </button>
                 </form>
               )}
