@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import dynamic from "next/dynamic";
 import { Controller, useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
@@ -32,9 +33,25 @@ export function SeccionUbicacion() {
     formState: { errors },
   } = useFormContext<DatosPropiedad>();
 
-  const lat = watch("lat") ?? LAT_DEFECTO;
-  const lng = watch("lng") ?? LNG_DEFECTO;
+  const latGuardada = watch("lat");
+  const lngGuardada = watch("lng");
+  const lat = latGuardada ?? LAT_DEFECTO;
+  const lng = lngGuardada ?? LNG_DEFECTO;
   const radioMapa = watch("radioMapa") ?? 300;
+
+  // Bug real que hizo que una propiedad se publicara sin mapa: el pin por
+  // defecto se veía en pantalla, pero hasta que alguien lo arrastraba o
+  // clickeaba, lat/lng nunca se escribían en el formulario — al guardar,
+  // quedaban null y la sección "Ubicación" no aparecía en la ficha pública.
+  // Con esto, la posición que se ve en el mapa es siempre la que se guarda,
+  // salga como salga.
+  useEffect(() => {
+    if (latGuardada == null || lngGuardada == null) {
+      setValue("lat", LAT_DEFECTO, { shouldDirty: false });
+      setValue("lng", LNG_DEFECTO, { shouldDirty: false });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="flex flex-col gap-5">

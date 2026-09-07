@@ -314,8 +314,8 @@ function PanelConsulta({
   const waUrl = waLink(waNumero, waMensaje);
 
   return (
-    <div className="flex flex-col gap-6 pt-8">
-      <SheetHeader>
+    <div className="flex flex-col gap-6 px-6 pt-8 pb-8">
+      <SheetHeader className="p-0 pr-8">
         <SheetTitle className="text-fp-h3 text-fp-navy">
           Consulta de {consulta.nombre}
         </SheetTitle>
