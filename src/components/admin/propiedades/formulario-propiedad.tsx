@@ -69,7 +69,11 @@ export function FormularioPropiedad({
   useEffect(() => {
     timerAutoguardado.current = setInterval(() => {
       if (formState.isDirty) {
-        void guardar("BORRADOR", true);
+        // `undefined`, no "BORRADOR": el autoguardado nunca tiene que tocar
+        // el estado de publicación. Antes pasaba "BORRADOR" acá por error
+        // y una propiedad PUBLICADA que se editaba por más de 30 segundos
+        // quedaba despublicada sola, sin que nadie tocara ningún botón.
+        void guardar(undefined, true);
       }
     }, 30_000);
     return () => {
@@ -79,7 +83,7 @@ export function FormularioPropiedad({
   }, [formState.isDirty]);
 
   const guardar = useCallback(
-    async (publicacion: "BORRADOR" | "PUBLICADA", silencioso = false) => {
+    async (publicacion: "BORRADOR" | "PUBLICADA" | undefined, silencioso = false) => {
       setGuardando(true);
       try {
         const datos = getValues();
@@ -96,7 +100,9 @@ export function FormularioPropiedad({
           toast.success(
             publicacion === "PUBLICADA"
               ? "Propiedad publicada."
-              : "Borrador guardado.",
+              : publicacion === "BORRADOR"
+                ? "Borrador guardado."
+                : "Cambios guardados.",
           );
         }
       } catch (error) {
@@ -164,8 +170,12 @@ export function FormularioPropiedad({
         <FormProvider {...form}>
           <form
             onSubmit={(e) => {
+              // Si se aprieta Enter sin querer en un campo, esto no tiene
+              // que cambiar el estado de publicación de la propiedad —
+              // publicar o pasar a borrador son siempre acciones explícitas
+              // de los dos botones de abajo.
               e.preventDefault();
-              void guardar("BORRADOR");
+              void guardar(undefined);
             }}
             className="flex flex-col gap-4"
           >
