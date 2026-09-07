@@ -23,6 +23,7 @@ export function ContenidoContacto({
     { icono: Mail, titulo: "Email", valor: emailNegocio },
     { icono: MapPin, titulo: "Dirección", valor: direccionNegocio },
     { icono: Clock, titulo: "Horarios", valor: horariosNegocio },
+    { icono: Phone, titulo: "Tomás Albornoz", valor: "+54 9 11 3934-5932" },
   ];
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");

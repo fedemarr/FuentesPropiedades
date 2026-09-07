@@ -97,6 +97,15 @@ export function FooterPublico({
                 </a>
               </li>
               <li className="flex items-start gap-3">
+                <Phone className="mt-0.5 h-4 w-4 shrink-0 text-fp-red" />
+                <a
+                  href="tel:+5491139345932"
+                  className="text-sm text-white/60 transition-colors hover:text-fp-white"
+                >
+                  Tomás Albornoz · +54 9 11 3934-5932
+                </a>
+              </li>
+              <li className="flex items-start gap-3">
                 <Mail className="mt-0.5 h-4 w-4 shrink-0 text-fp-red" />
                 <a
                   href={`mailto:${email}`}
