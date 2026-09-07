@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { Controller, useFormContext } from "react-hook-form";
+import { Loader2, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
 import { Campo } from "../campo";
 import type { DatosPropiedad } from "@/app/admin/propiedades/schema";
+import { geocodificarDireccion } from "@/app/admin/propiedades/geocodificar-actions";
 
 const MapaSelectorUbicacion = dynamic(
   () => import("./mapa-selector-ubicacion").then((m) => m.MapaSelectorUbicacion),
@@ -24,11 +27,14 @@ const MapaSelectorUbicacion = dynamic(
 const LAT_DEFECTO = -34.5427;
 const LNG_DEFECTO = -58.7128;
 
+const ESPERA_DEBOUNCE_MS = 900;
+
 export function SeccionUbicacion() {
   const {
     register,
     control,
     watch,
+    getValues,
     setValue,
     formState: { errors },
   } = useFormContext<DatosPropiedad>();
@@ -38,6 +44,14 @@ export function SeccionUbicacion() {
   const lat = latGuardada ?? LAT_DEFECTO;
   const lng = lngGuardada ?? LNG_DEFECTO;
   const radioMapa = watch("radioMapa") ?? 300;
+
+  const [buscando, setBuscando] = useState(false);
+  const [estadoBusqueda, setEstadoBusqueda] = useState<string | null>(null);
+  // Una vez que alguien arrastra el pin a mano, dejamos de pisarlo solos
+  // cada vez que toca otro campo de dirección — a partir de ahí, buscar de
+  // nuevo es siempre una decisión explícita (el botón).
+  const pinAjustadoManualmente = useRef(false);
+  const timerDebounce = useRef<ReturnType<typeof setTimeout>>(null);
 
   // Bug real que hizo que una propiedad se publicara sin mapa: el pin por
   // defecto se veía en pantalla, pero hasta que alguien lo arrastraba o
@@ -53,6 +67,43 @@ export function SeccionUbicacion() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const buscarUbicacion = useCallback(async () => {
+    const datos = getValues();
+    const base = datos.direccionExacta?.trim() || datos.calle?.trim();
+    const partes = [base, datos.localidad, datos.partido, datos.provincia || "Buenos Aires", "Argentina"].filter(
+      (p): p is string => !!p && p.trim().length > 0,
+    );
+
+    if (partes.length < 2) return; // ni dirección ni localidad todavía, no hay nada que buscar
+
+    setBuscando(true);
+    setEstadoBusqueda(null);
+    try {
+      const resultado = await geocodificarDireccion(partes.join(", "));
+      if (resultado.ok && resultado.lat != null && resultado.lng != null) {
+        setValue("lat", resultado.lat, { shouldDirty: true });
+        setValue("lng", resultado.lng, { shouldDirty: true });
+        setEstadoBusqueda("Ubicación encontrada automáticamente. Podés ajustar el pin si no quedó exacta.");
+      } else {
+        setEstadoBusqueda(resultado.error ?? "No se encontró la dirección. Ajustá el pin manualmente.");
+      }
+    } finally {
+      setBuscando(false);
+    }
+  }, [getValues, setValue]);
+
+  const dispararBusquedaConDebounce = useCallback(() => {
+    if (pinAjustadoManualmente.current) return; // ya lo movieron a mano, no lo pisamos
+    if (timerDebounce.current) clearTimeout(timerDebounce.current);
+    timerDebounce.current = setTimeout(buscarUbicacion, ESPERA_DEBOUNCE_MS);
+  }, [buscarUbicacion]);
+
+  useEffect(() => {
+    return () => {
+      if (timerDebounce.current) clearTimeout(timerDebounce.current);
+    };
+  }, []);
+
   return (
     <div className="flex flex-col gap-5">
       <Campo
@@ -64,6 +115,10 @@ export function SeccionUbicacion() {
           id="direccionExacta"
           placeholder="Belgrano 1487, San Miguel"
           {...register("direccionExacta")}
+          onBlur={(e) => {
+            register("direccionExacta").onBlur(e);
+            dispararBusquedaConDebounce();
+          }}
         />
       </Campo>
 
@@ -73,19 +128,51 @@ export function SeccionUbicacion() {
           htmlFor="calle"
           hint='Se muestra en el sitio, ej. "Belgrano al 1400" — sin número exacto.'
         >
-          <Input id="calle" placeholder="Belgrano al 1400" {...register("calle")} />
+          <Input
+            id="calle"
+            placeholder="Belgrano al 1400"
+            {...register("calle")}
+            onBlur={(e) => {
+              register("calle").onBlur(e);
+              dispararBusquedaConDebounce();
+            }}
+          />
         </Campo>
         <Campo label="Barrio" htmlFor="barrio">
-          <Input id="barrio" placeholder="Centro" {...register("barrio")} />
+          <Input
+            id="barrio"
+            placeholder="Centro"
+            {...register("barrio")}
+            onBlur={(e) => {
+              register("barrio").onBlur(e);
+              dispararBusquedaConDebounce();
+            }}
+          />
         </Campo>
       </div>
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
         <Campo label="Localidad" requerido error={errors.localidad?.message} htmlFor="localidad">
-          <Input id="localidad" placeholder="San Miguel" {...register("localidad")} />
+          <Input
+            id="localidad"
+            placeholder="San Miguel"
+            {...register("localidad")}
+            onBlur={(e) => {
+              register("localidad").onBlur(e);
+              dispararBusquedaConDebounce();
+            }}
+          />
         </Campo>
         <Campo label="Partido" htmlFor="partido">
-          <Input id="partido" placeholder="San Miguel" {...register("partido")} />
+          <Input
+            id="partido"
+            placeholder="San Miguel"
+            {...register("partido")}
+            onBlur={(e) => {
+              register("partido").onBlur(e);
+              dispararBusquedaConDebounce();
+            }}
+          />
         </Campo>
         <Campo label="Provincia" requerido htmlFor="provincia">
           <Input id="provincia" {...register("provincia")} />
@@ -94,13 +181,45 @@ export function SeccionUbicacion() {
 
       <Campo
         label="Ubicación en el mapa"
-        hint="Arrastrá el pin o hacé click en el mapa. El círculo rojo es lo que va a ver el público — la dirección exacta nunca se expone."
+        hint="Se ubica sola a partir de la dirección — arrastrá el pin si no quedó exacta. El círculo rojo es lo que va a ver el público; la dirección exacta nunca se expone."
       >
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <p className="flex items-center gap-1.5 text-fp-small text-fp-slate">
+            {buscando ? (
+              <>
+                <Loader2 className="size-3.5 animate-spin" />
+                Buscando la dirección…
+              </>
+            ) : (
+              estadoBusqueda && (
+                <>
+                  <MapPin className="size-3.5 shrink-0" />
+                  {estadoBusqueda}
+                </>
+              )
+            )}
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={buscando}
+            onClick={() => {
+              pinAjustadoManualmente.current = false;
+              void buscarUbicacion();
+            }}
+          >
+            <MapPin className="size-3.5" />
+            Buscar dirección en el mapa
+          </Button>
+        </div>
         <MapaSelectorUbicacion
           lat={lat}
           lng={lng}
           radioMapa={radioMapa}
           onCambiarPosicion={(nuevaLat, nuevaLng) => {
+            pinAjustadoManualmente.current = true;
+            setEstadoBusqueda(null);
             setValue("lat", nuevaLat, { shouldDirty: true });
             setValue("lng", nuevaLng, { shouldDirty: true });
           }}
