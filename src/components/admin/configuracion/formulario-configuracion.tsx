@@ -17,6 +17,9 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { guardarConfiguracion, guardarFaq, eliminarFaq } from "@/app/admin/configuracion/actions";
+import { SubidaFotoConfig } from "./subida-foto-config";
+
+const FOTO_POR_DEFECTO = "/fotomaria.jpeg";
 
 type Configuracion = {
   id: string;
@@ -32,6 +35,8 @@ type Configuracion = {
   heroSubtitulo: string | null;
   textoNosotros: string;
   textoAdmin: string;
+  fotoNosotros: string | null;
+  fotoTasaciones: string | null;
 };
 
 type Faq = {
@@ -67,6 +72,8 @@ export function FormularioConfiguracion({
   const [heroSubtitulo, setHeroSubtitulo] = useState(configuracion.heroSubtitulo ?? "");
   const [textoNosotros, setTextoNosotros] = useState(configuracion.textoNosotros);
   const [textoAdmin, setTextoAdmin] = useState(configuracion.textoAdmin);
+  const [fotoNosotros, setFotoNosotros] = useState(configuracion.fotoNosotros);
+  const [fotoTasaciones, setFotoTasaciones] = useState(configuracion.fotoTasaciones);
 
   const [faqs, setFaqs] = useState<Faq[]>(faqsIniciales);
 
@@ -86,6 +93,8 @@ export function FormularioConfiguracion({
           heroSubtitulo,
           textoNosotros,
           textoAdmin,
+          fotoNosotros,
+          fotoTasaciones,
         });
         toast.success("Configuración guardada.");
         router.refresh();
@@ -179,6 +188,12 @@ export function FormularioConfiguracion({
             Textos del sitio
           </TabsTrigger>
           <TabsTrigger
+            value="imagenes"
+            className="rounded-fp-full border border-fp-line bg-white px-4 py-1.5 text-fp-small data-[state=active]:border-fp-navy data-[state=active]:bg-fp-navy data-[state=active]:text-white data-[state=active]:shadow-none"
+          >
+            Imágenes
+          </TabsTrigger>
+          <TabsTrigger
             value="faqs"
             className="rounded-fp-full border border-fp-line bg-white px-4 py-1.5 text-fp-small data-[state=active]:border-fp-navy data-[state=active]:bg-fp-navy data-[state=active]:text-white data-[state=active]:shadow-none"
           >
@@ -218,6 +233,28 @@ export function FormularioConfiguracion({
               <CampoTextarea label="Subtítulo del hero" value={heroSubtitulo} onChange={setHeroSubtitulo} rows={2} />
               <CampoTextarea label="Texto - Nosotros" value={textoNosotros} onChange={setTextoNosotros} rows={4} />
               <CampoTextarea label="Texto - Administración" value={textoAdmin} onChange={setTextoAdmin} rows={4} />
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="imagenes" className="mt-4">
+          <div className="rounded-fp-lg border border-fp-line bg-white p-6">
+            <h3 className="text-fp-h3 text-fp-navy mb-4">Fotos del sitio</h3>
+            <div className="flex flex-col gap-6">
+              <SubidaFotoConfig
+                label="Foto de Mariana (página Nosotros)"
+                hint="Se muestra en la página 'Nosotros'."
+                url={fotoNosotros}
+                urlPorDefecto={FOTO_POR_DEFECTO}
+                onCambiar={setFotoNosotros}
+              />
+              <SubidaFotoConfig
+                label="Foto de Tasaciones (home)"
+                hint="Se muestra en el bloque de tasaciones de la página principal."
+                url={fotoTasaciones}
+                urlPorDefecto={FOTO_POR_DEFECTO}
+                onCambiar={setFotoTasaciones}
+              />
             </div>
           </div>
         </TabsContent>

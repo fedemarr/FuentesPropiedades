@@ -142,10 +142,10 @@ model Propiedad {
   barrio          String?
   localidad       String
   partido         String?
-  provincia       String @default("Buenos Aires")
+  provincia       String  @default("Buenos Aires")
   lat             Float?
   lng             Float?
-  radioMapa       Int    @default(300) // metros del círculo público
+  radioMapa       Int     @default(300) // metros del círculo público
 
   // Detalles — todos opcionales; si es null NO se renderiza
   ambientes   Int?
@@ -182,9 +182,9 @@ model Propiedad {
   metaTitle       String?
   metaDescription String?
 
-  vistas         Int              @default(0)
-  consultas      Consulta[]
-  vistasDetalle  VistaPropiedad[]
+  vistas        Int              @default(0)
+  consultas     Consulta[]
+  vistasDetalle VistaPropiedad[]
 
   // Flag interno de datos de prueba (para poder distinguirlos de los reales
   // y borrarlos con `npm run seed:clean` sin tocar datos cargados a mano)
@@ -232,20 +232,20 @@ model Consulta {
   propiedad   Propiedad? @relation(fields: [propiedadId], references: [id], onDelete: SetNull)
 
   // Campos de tasación / administración (todos opcionales)
-  direccionInmueble String?
-  tipoInmueble      String?
-  ambientesInmueble String?
+  direccionInmueble  String?
+  tipoInmueble       String?
+  ambientesInmueble  String?
   antiguedadInmueble String?
-  supCubiertaInm    String?
-  supTotalInm       String?
-  cantUnidades      String? // para administración de consorcios
-  fotos             String[] @default([]) // URLs de Cloudinary (tasación, hasta 5)
+  supCubiertaInm     String?
+  supTotalInm        String?
+  cantUnidades       String? // para administración de consorcios
+  fotos              String[] @default([]) // URLs de Cloudinary (tasación, hasta 5)
 
-  notaInterna String?         @db.Text
+  notaInterna String?        @db.Text
   origen      OrigenConsulta
-  esDeSeed    Boolean         @default(false)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  esDeSeed    Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
 
   @@index([estado, createdAt])
   @@index([tipo, estado])
@@ -265,20 +265,22 @@ model VistaPropiedad {
 
 // Fila única, id fijo "singleton"
 model Configuracion {
-  id            String   @id @default("singleton")
-  telefono      String
-  whatsapp      String // formato internacional sin +, ej 5491112345678
-  email         String
-  direccion     String
-  horarios      String
-  matricula     String   @default("CMCPSM 3032")
-  instagram     String?
-  facebook      String?
-  heroTitulo    String
-  heroSubtitulo String?
-  textoNosotros String   @db.Text
-  textoAdmin    String   @db.Text // sección administraciones
-  updatedAt     DateTime @updatedAt
+  id             String   @id @default("singleton")
+  telefono       String
+  whatsapp       String // formato internacional sin +, ej 5491112345678
+  email          String
+  direccion      String
+  horarios       String
+  matricula      String   @default("CMCPSM 3032")
+  instagram      String?
+  facebook       String?
+  heroTitulo     String
+  heroSubtitulo  String?
+  textoNosotros  String   @db.Text
+  textoAdmin     String   @db.Text // sección administraciones
+  fotoNosotros   String? // Cloudinary URL — si es null, se usa /fotomaria.jpeg
+  fotoTasaciones String? // Cloudinary URL — si es null, se usa /fotomaria.jpeg
+  updatedAt      DateTime @updatedAt
 }
 
 model Faq {

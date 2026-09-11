@@ -11,21 +11,27 @@ export const dynamic = "force-dynamic";
 export const revalidate = 300;
 
 export default async function HomePage() {
-  const propiedades = await prisma.propiedad.findMany({
-    where: {
-      publicacion: "PUBLICADA",
-      deletedAt: null,
-      destacada: true,
-    },
-    include: {
-      imagenes: {
-        orderBy: { orden: "asc" },
-        take: 8,
+  const [propiedades, config] = await Promise.all([
+    prisma.propiedad.findMany({
+      where: {
+        publicacion: "PUBLICADA",
+        deletedAt: null,
+        destacada: true,
       },
-    },
-    orderBy: { updatedAt: "desc" },
-    take: 9,
-  });
+      include: {
+        imagenes: {
+          orderBy: { orden: "asc" },
+          take: 8,
+        },
+      },
+      orderBy: { updatedAt: "desc" },
+      take: 9,
+    }),
+    prisma.configuracion.findUnique({
+      where: { id: "singleton" },
+      select: { fotoTasaciones: true },
+    }),
+  ]);
 
   const propiedadesSerializadas = propiedades.map((p) => ({
     id: p.id,
@@ -64,7 +70,7 @@ export default async function HomePage() {
       <PropiedadesDestacadas propiedades={propiedadesSerializadas} />
       <FranjaServicios />
       <BloqueEstadisticas />
-      <CtaTasacion />
+      <CtaTasacion fotoTasaciones={config?.fotoTasaciones || "/fotomaria.jpeg"} />
       <PreFooter />
     </>
   );

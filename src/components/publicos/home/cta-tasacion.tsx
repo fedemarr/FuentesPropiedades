@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 
-export function CtaTasacion() {
+interface CtaTasacionProps {
+  fotoTasaciones: string;
+}
+
+export function CtaTasacion({ fotoTasaciones }: CtaTasacionProps) {
   return (
     <section className="bg-fp-navy py-20 lg:py-32">
       <div className="fp-container">
@@ -18,7 +22,7 @@ export function CtaTasacion() {
           >
             <div
               className="h-full w-full bg-cover bg-center"
-              style={{ backgroundImage: "url('/fotomaria.jpeg')" }}
+              style={{ backgroundImage: `url('${fotoTasaciones}')` }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-fp-navy/40 to-transparent" />
           </motion.div>

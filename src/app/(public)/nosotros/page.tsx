@@ -14,8 +14,13 @@ const TEXTO_POR_DEFECTO =
 export default async function NosotrosPage() {
   const config = await prisma.configuracion.findUnique({
     where: { id: "singleton" },
-    select: { textoNosotros: true },
+    select: { textoNosotros: true, fotoNosotros: true },
   });
 
-  return <ContenidoNosotros textoNosotros={config?.textoNosotros || TEXTO_POR_DEFECTO} />;
+  return (
+    <ContenidoNosotros
+      textoNosotros={config?.textoNosotros || TEXTO_POR_DEFECTO}
+      fotoNosotros={config?.fotoNosotros || "/fotomaria.jpeg"}
+    />
+  );
 }

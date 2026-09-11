@@ -22,6 +22,8 @@ interface DatosConfiguracion {
   heroSubtitulo: string;
   textoNosotros: string;
   textoAdmin: string;
+  fotoNosotros: string | null;
+  fotoTasaciones: string | null;
 }
 
 export async function guardarConfiguracion(data: DatosConfiguracion): Promise<void> {
@@ -41,6 +43,8 @@ export async function guardarConfiguracion(data: DatosConfiguracion): Promise<vo
       heroSubtitulo: data.heroSubtitulo || null,
       textoNosotros: data.textoNosotros,
       textoAdmin: data.textoAdmin,
+      fotoNosotros: data.fotoNosotros,
+      fotoTasaciones: data.fotoTasaciones,
     },
   });
   revalidatePath("/admin/configuracion");

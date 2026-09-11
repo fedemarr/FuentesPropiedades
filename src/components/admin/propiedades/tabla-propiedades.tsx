@@ -4,11 +4,13 @@ import { useState, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
+import QRCode from "qrcode";
 import {
   Copy,
   ExternalLink,
   ImageOff,
   MoreVertical,
+  QrCode,
   Star,
   Trash2,
 } from "lucide-react";
@@ -152,6 +154,24 @@ export function TablaPropiedades({ propiedades }: TablaPropiedadesProps) {
         toast.error("No se pudo duplicar la propiedad.");
       }
     });
+  }
+
+  async function descargarQr(p: FilaPropiedad) {
+    const base = process.env.NEXT_PUBLIC_SITE_URL || "https://propiedadesfuentes.com";
+    const url = `${base}/propiedades/${p.slug}`;
+    try {
+      const dataUrl = await QRCode.toDataURL(url, {
+        width: 800,
+        margin: 2,
+        color: { dark: "#1B3A5C", light: "#FFFFFF" },
+      });
+      const enlace = document.createElement("a");
+      enlace.href = dataUrl;
+      enlace.download = `qr-${p.codigo}.png`;
+      enlace.click();
+    } catch {
+      toast.error("No se pudo generar el código QR.");
+    }
   }
 
   function confirmarEliminar() {
@@ -352,12 +372,20 @@ export function TablaPropiedades({ propiedades }: TablaPropiedadesProps) {
                           <Copy className="size-4" />
                           Duplicar
                         </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <a href={`/propiedades/${p.slug}`} target="_blank" rel="noopener noreferrer">
-                            <ExternalLink className="size-4" />
-                            Ver en el sitio
-                          </a>
-                        </DropdownMenuItem>
+                        {p.publicacion === "PUBLICADA" && (
+                          <>
+                            <DropdownMenuItem asChild>
+                              <a href={`/propiedades/${p.slug}`} target="_blank" rel="noopener noreferrer">
+                                <ExternalLink className="size-4" />
+                                Ver en el sitio
+                              </a>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => void descargarQr(p)}>
+                              <QrCode className="size-4" />
+                              Descargar código QR
+                            </DropdownMenuItem>
+                          </>
+                        )}
                         <DropdownMenuItem variant="destructive" onClick={() => setAEliminar(p)}>
                           <Trash2 className="size-4" />
                           Eliminar

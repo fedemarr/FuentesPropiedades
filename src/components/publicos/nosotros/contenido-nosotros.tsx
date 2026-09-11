@@ -40,9 +40,10 @@ const SERVICIOS = [
 
 interface ContenidoNosotrosProps {
   textoNosotros: string;
+  fotoNosotros: string;
 }
 
-export function ContenidoNosotros({ textoNosotros }: ContenidoNosotrosProps) {
+export function ContenidoNosotros({ textoNosotros, fotoNosotros }: ContenidoNosotrosProps) {
   const parrafos = textoNosotros.split("\n\n").filter(Boolean);
 
   return (
@@ -81,7 +82,7 @@ export function ContenidoNosotros({ textoNosotros }: ContenidoNosotrosProps) {
             >
               <div
                 className="h-full w-full bg-cover bg-center"
-                style={{ backgroundImage: "url('/fotomaria.jpeg')" }}
+                style={{ backgroundImage: `url('${fotoNosotros}')` }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-fp-navy/30 to-transparent" />
             </motion.div>
