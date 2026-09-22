@@ -88,7 +88,7 @@ export function VistaMapa({ propiedades }: VistaMapaProps) {
       <MapContainer
         center={center}
         zoom={13}
-        className="h-full flex-1"
+        className="fp-mapa-suave h-full flex-1"
         scrollWheelZoom={false}
       >
         <TileLayer

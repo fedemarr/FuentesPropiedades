@@ -21,6 +21,7 @@ export function MapaUbicacion({ lat, lng, radioMapa }: MapaUbicacionProps) {
       zoom={15}
       scrollWheelZoom={false}
       style={{ height: "100%", width: "100%" }}
+      className="fp-mapa-suave"
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

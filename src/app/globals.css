@@ -329,3 +329,14 @@
     box-shadow: var(--shadow-fp-lg);
   }
 }
+
+/* Mapas (Leaflet/OpenStreetMap): las tiles gratuitas vienen con colores muy
+   saturados (rutas amarillas, carteles) que no combinan con la estética
+   limpia del sitio. Los proveedores de tiles "livianos" sin costo (CARTO,
+   Wikimedia) requieren API key o bloquean el acceso — en vez de depender de
+   un servicio externo nuevo, atenuamos el estilo clásico de OSM con un
+   filtro CSS. Solo afecta la capa de tiles (fondo), no el pin ni el círculo
+   de privacidad, que viven en otras capas de Leaflet. */
+.fp-mapa-suave .leaflet-tile-pane {
+  filter: grayscale(45%) saturate(70%) brightness(1.08) contrast(0.92);
+}

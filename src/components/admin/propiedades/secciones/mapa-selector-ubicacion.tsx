@@ -50,6 +50,7 @@ export function MapaSelectorUbicacion({
         zoom={15}
         style={{ height: "320px", width: "100%" }}
         scrollWheelZoom={false}
+        className="fp-mapa-suave"
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
