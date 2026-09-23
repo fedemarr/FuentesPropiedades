@@ -1,11 +1,11 @@
 "use client";
 
 import { Controller, useFormContext } from "react-hook-form";
-import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Campo } from "../campo";
 import { cn } from "@/lib/utils";
 import type { DatosPropiedad } from "@/app/admin/propiedades/schema";
+import { InputPrecio } from "./input-precio";
 
 const MONEDAS = [
   { valor: "USD", label: "USD" },
@@ -14,7 +14,6 @@ const MONEDAS = [
 
 export function SeccionPrecio() {
   const {
-    register,
     control,
     watch,
     formState: { errors },
@@ -57,14 +56,19 @@ export function SeccionPrecio() {
           error={errors.precio?.message}
           htmlFor="precio"
         >
-          <Input
-            id="precio"
-            type="number"
-            min={0}
-            step="1"
-            disabled={consultarPrecio}
-            placeholder="149000"
-            {...register("precio", { valueAsNumber: true })}
+          <Controller
+            name="precio"
+            control={control}
+            render={({ field }) => (
+              <InputPrecio
+                id="precio"
+                disabled={consultarPrecio}
+                placeholder="149.000"
+                value={field.value ?? undefined}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+              />
+            )}
           />
         </Campo>
       </div>
@@ -88,13 +92,18 @@ export function SeccionPrecio() {
         htmlFor="expensas"
         hint="Dejalo vacío si no aplica (lotes, casas sin expensas, etc.)."
       >
-        <Input
-          id="expensas"
-          type="number"
-          min={0}
-          step="1"
-          placeholder="45000"
-          {...register("expensas", { valueAsNumber: true })}
+        <Controller
+          name="expensas"
+          control={control}
+          render={({ field }) => (
+            <InputPrecio
+              id="expensas"
+              placeholder="45.000"
+              value={field.value ?? undefined}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+            />
+          )}
         />
       </Campo>
 
